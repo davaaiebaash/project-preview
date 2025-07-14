@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Генератор кейсов</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Генератор кейсов для портфолио</h1>
+        <form id="caseForm">
+            <label>Название проекта</label>
+            <input type="text" id="projectTitle" required>
+
+            <label>Специализация</label>
+            <select id="specialization">
+                <option>Маркетинг и реклама</option>
+                <option>Графический дизайн</option>
+                <option>ИИ</option>
+                <option>3D-графика</option>
+                <option>Тексты</option>
+            </select>
+
+            <label>Описание проекта</label>
+            <textarea id="description" rows="4"></textarea>
+
+            <label>Решение</label>
+            <textarea id="solution" rows="4"></textarea>
+
+            <label>Результат</label>
+            <textarea id="result" rows="3"></textarea>
+
+            <label>Навыки (через запятую, до 5)</label>
+            <input type="text" id="skills">
+
+            <button type="button" onclick="generateCase()">Сгенерировать кейс</button>
+        </form>
+
+        <div id="output" class="output"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

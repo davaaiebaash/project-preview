@@ -1,21 +1,75 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Превью проекта</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Портфолио проектов</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+            color: #333;
+        }
+        header {
+            background-color: #4a67ff;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+        .card-title {
+            font-weight: 600;
+            padding: 15px;
+            font-size: 16px;
+        }
+        .card a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
 </head>
 <body>
-    <div class="case-preview">
-        <div class="bg-layer"></div>
-        <div class="image-frame">
-            <img src="preview/example-image.jpg" alt="Превью проекта">
+    <header>
+        <h1>Моё портфолио: визуальные кейсы</h1>
+    </header>
+    <main class="gallery">
+        <div class="card">
+            <a href="preview/example-image.jpg" target="_blank">
+                <img src="preview/example-image.jpg" alt="Обложка проекта">
+                <div class="card-title">Пример проекта #1</div>
+            </a>
         </div>
-        <div class="text-overlay">
-            <h1>Оформление Telegram-канала</h1>
-            <p>Маркетинг и реклама</p>
+        <div class="card">
+            <a href="webform/form.html" target="_blank">
+                <img src="https://dummyimage.com/1280x720/4a67ff/ffffff&text=Генератор+кейса" alt="Генератор кейса">
+                <div class="card-title">📝 Форма генерации кейса</div>
+            </a>
         </div>
-        <div class="anatria-logo">ANATRIA</div>
-    </div>
+    </main>
 </body>
 </html>

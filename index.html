@@ -1,75 +1,355 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Портфолио проектов</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио | Дизайн-Инженерия</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Используем шрифты с поддержкой кириллицы -->
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@300;500;800&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --oled-black: #000000;
+            --alyi: #EF0107;
+            --elektrik: #0066FF;
+            --fuksiya: #D900FF;
+            --steklo-bg: rgba(255, 255, 255, 0.05);
+            --steklo-border: rgba(255, 255, 255, 0.1);
+            --blur: blur(20px);
+            --font-main: 'Unbounded', sans-serif; /* Аналог Benzin */
+            --font-text: 'Manrope', sans-serif;   /* Аналог Cygre */
+            --font-decor: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f5f7fa;
-            color: #333;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: var(--font-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            padding: 50px 0;
         }
-        header {
-            background-color: #4a67ff;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        h1 {
-            margin: 0;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 40px;
-        }
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+        .слайд {
+            width: 1280px;
+            height: 720px;
+            background: var(--oled-black);
+            position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        /* ЭФФЕКТ СЕВЕРНОГО СИЯНИЯ (AURORA) */
+        .слайд::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(217, 0, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(0, 102, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(239, 1, 7, 0.05) 0%, transparent 60%);
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        /* ТИПОГРАФИКА */
+        h1, h2 {
+            font-family: var(--font-main);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .заголовок-слайда {
+            font-size: 48px;
+            margin: 60px 0 30px 80px;
+            background: linear-gradient(to right, #ffffff, #999999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: 10;
+        }
+
+        .стеклянная-карточка {
+            background: var(--steklo-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--steklo-border);
+            border-radius: 20px;
+            padding: 40px;
+            z-index: 10;
+        }
+
+        /* СЛАЙД 1: ТИТУЛ */
+        .титул-контейнер {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            transition: transform 0.3s;
         }
-        .card:hover {
-            transform: translateY(-5px);
+
+        .контурный-текст {
+            font-size: 110px;
+            font-family: var(--font-main);
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.7);
+            position: relative;
+            margin-bottom: 20px;
         }
-        .card img {
+
+        .контурный-текст::before {
+            content: 'ПОРТФОЛИО';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: auto;
+            height: 100%;
+            background: var(--alyi);
+            filter: blur(40px);
+            opacity: 0.3;
+            z-index: -1;
         }
-        .card-title {
-            font-weight: 600;
-            padding: 15px;
-            font-size: 16px;
+
+        .подпись-титула {
+            font-size: 18px;
+            letter-spacing: 0.4em;
+            color: var(--alyi);
+            font-weight: 800;
         }
-        .card a {
-            text-decoration: none;
-            color: inherit;
+
+        /* СЛАЙД 2: НАВИГАЦИЯ */
+        .шкала-времени {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 100px 80px;
+            position: relative;
         }
+
+        .луч-неона {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--alyi), var(--fuksiya));
+            box-shadow: 0 0 15px var(--alyi);
+            top: 50%;
+            left: 0;
+            width: 35%;
+        }
+
+        .этап {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            opacity: 0.5;
+        }
+
+        .этап.активный { opacity: 1; }
+
+        .точка {
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        /* КЕЙСЫ */
+        .сетка-кейса {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 60px;
+            padding: 0 80px;
+            align-items: center;
+        }
+
+        .мокап {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--steklo-border);
+            position: relative;
+        }
+
+        .лазер {
+            position: absolute;
+            top: 0;
+            left: 40%;
+            width: 2px;
+            height: 100%;
+            background: var(--alyi);
+            box-shadow: 0 0 20px var(--alyi);
+        }
+
+        .инфо-блок h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: var(--alyi);
+        }
+
+        /* СЛАЙД С ЦИФРАМИ */
+        .гигантские-цифры {
+            display: flex;
+            gap: 80px;
+            justify-content: center;
+            align-items: center;
+            height: 60%;
+        }
+
+        .блок-цифр {
+            text-align: center;
+        }
+
+        .число {
+            font-family: var(--font-main);
+            font-size: 160px;
+            background: linear-gradient(180deg, var(--alyi) 0%, var(--fuksiya) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        /* ФИНАЛЬНАЯ КНОПКА */
+        .кибер-кнопка {
+            border: 2px solid var(--alyi);
+            padding: 25px 60px;
+            font-family: var(--font-main);
+            font-size: 24px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .кибер-кнопка::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px solid rgba(239, 1, 7, 0.3);
+        }
+
+        .декор-код {
+            font-family: var(--font-decor);
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            text-transform: uppercase;
+        }
+
     </style>
 </head>
 <body>
-    <header>
-        <h1>Моё портфолио: визуальные кейсы</h1>
-    </header>
-    <main class="gallery">
-        <div class="card">
-            <a href="preview/example-image.jpg" target="_blank">
-                <img src="preview/example-image.jpg" alt="Обложка проекта">
-                <div class="card-title">Пример проекта #1</div>
-            </a>
+
+    <!-- Слайд 1: Титул -->
+    <div class="слайд">
+        <div class="титул-контейнер">
+            <h1 class="контурный-текст">ПОРТФОЛИО</h1>
+            <p class="подпись-титула">[ ДИЗАЙН-ИНЖЕНЕРИЯ БУДУЩЕГО ]</p>
         </div>
-        <div class="card">
-            <a href="webform/form.html" target="_blank">
-                <img src="https://dummyimage.com/1280x720/4a67ff/ffffff&text=Генератор+кейса" alt="Генератор кейса">
-                <div class="card-title">📝 Форма генерации кейса</div>
-            </a>
+        <div class="декор-код">СИСТЕМА_АКТИВНА // 2024</div>
+    </div>
+
+    <!-- Слайд 2: Навигация -->
+    <div class="слайд">
+        <h2 class="заголовок-слайда">Маршрут проекта</h2>
+        <div class="шкала-времени">
+            <div class="луч-неона"></div>
+            <div class="этап активный">
+                <div class="точка"></div>
+                <span>ВХОД</span>
+            </div>
+            <div class="этап">
+                <div class="точка"></div>
+                <span>КЕЙС-СТАДИ</span>
+            </div>
+            <div class="этап">
+                <div class="точка"></div>
+                <span>ЭКСПЕРТИЗА</span>
+            </div>
+            <div class="этап">
+                <div class="точка"></div>
+                <span>ЦИФРЫ</span>
+            </div>
+            <div class="этап">
+                <div class="точка"></div>
+                <span>КОНТАКТ</span>
+            </div>
         </div>
-    </main>
+    </div>
+
+    <!-- Слайд 4: Кейс 1 (Раскраски) -->
+    <div class="слайд">
+        <h2 class="заголовок-слайда">Кейс 01: Лазерный вектор</h2>
+        <div class="сетка-кейса">
+            <div class="стеклянная-карточка инфо-блок">
+                <h3>РАСКРАСКИ</h3>
+                <p>Трансформация аналогового наброска в идеальный цифровой вектор с помощью алгоритмов сканирования.</p>
+                <div style="margin-top: 30px; font-family: var(--font-decor); color: var(--alyi);">
+                    [ СТАТУС: ЗАВЕРШЕНО ]
+                </div>
+            </div>
+            <div class="мокап">
+                <div class="лазер"></div>
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/13813898144247547514" alt="[Изображение чертежа или контура]" style="width: 100%; display: block;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Слайд: Кейс 4 (Газель) -->
+    <div class="слайд">
+        <h2 class="заголовок-слайда">Кейс 04: Инженерный шик</h2>
+        <div class="сетка-кейса">
+            <div class="мокап" style="border-color: var(--elektrik);">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/14983084346853507106" alt="[Изображение электро-грузовика]" style="width: 100%; display: block; filter: saturate(0.5) contrast(1.2);">
+            </div>
+            <div class="стеклянная-карточка инфо-блок" style="border-left: 4px solid var(--elektrik);">
+                <h3 style="color: var(--elektrik);">ГАЗЕЛЬ: ЭЛЕКТРО</h3>
+                <p>Разработка визуального интерфейса и внешнего вида коммерческого транспорта. От пикселя до метра.</p>
+                <p style="margin-top: 20px; font-weight: 800;">МАСШТАБИРУЕМОСТЬ: 100%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Слайд 24: Результаты -->
+    <div class="слайд">
+        <h2 class="заголовок-слайда">Эффективность</h2>
+        <div class="гигантские-цифры">
+            <div class="блок-цифр">
+                <div class="число">24</div>
+                <p style="font-family: var(--font-main); font-size: 14px;">КЕЙСА В ГОД</p>
+            </div>
+            <div class="блок-цифр">
+                <div class="число">48</div>
+                <p style="font-family: var(--font-main); font-size: 14px;">ЧАСОВ НА СТАРТ</p>
+            </div>
+        </div>
+        <div class="декор-код" style="width: 100%; text-align: center; right: 0;">ОПТИМИЗАЦИЯ_БИЗНЕС_ПРОЦЕССОВ: TRUE</div>
+    </div>
+
+    <!-- Слайд 27: CTA -->
+    <div class="слайд">
+        <div class="титул-контейнер">
+            <h2 style="font-size: 64px; margin-bottom: 50px;">ВАШ ПРОЕКТ — <br><span style="color: var(--alyi);">СЛЕДУЮЩИЙ</span></h2>
+            <button class="кибер-кнопка">ЗАПУСТИТЬ ПРОЕКТ</button>
+        </div>
+        <div class="декор-код">СИСТЕМА_ОФФЛАЙН: [ДАННЫЕ СОХРАНЕНЫ]</div>
+    </div>
+
 </body>
 </html>

@@ -1,75 +1,828 @@
-
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <title>Портфолио проектов</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f5f7fa;
-            color: #333;
-        }
-        header {
-            background-color: #4a67ff;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        h1 {
-            margin: 0;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 40px;
-        }
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            overflow: hidden;
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .card img {
-            width: 100%;
-            height: auto;
-        }
-        .card-title {
-            font-weight: 600;
-            padding: 15px;
-            font-size: 16px;
-        }
-        .card a {
-            text-decoration: none;
-            color: inherit;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Neuropanda.ai - Prompt Library</title>
+<style>
+  /* --- ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ --- */
+  :root {
+    --bg-body: #f4f7f6;
+    --text-main: #333;
+    --bg-sidebar: #2c3e50;
+    --sidebar-header: #243442;
+    --sidebar-text: #ecf0f1;
+    --sidebar-hover: #34495e;
+    --bg-topbar: #fff;
+    --border-color: #ddd;
+    --bg-card: #fff;
+    --text-muted: #7f8c8d;
+    --bg-input: #fff;
+    --text-input: #333;
+    --bg-prompt: #f8f9fa;
+    --tag-bg: #e1f5fe;
+    --tag-text: #0288d1;
+    --highlight-bg: #ffeaa7;
+    --highlight-text: #d35400;
+    --modal-bg: rgba(0,0,0,0.5);
+    --modal-content: #fff;
+  }
+
+  [data-theme="dark"] {
+    --bg-body: #121212;
+    --text-main: #e0e0e0;
+    --bg-sidebar: #1a1a24;
+    --sidebar-header: #111118;
+    --sidebar-text: #cfd8dc;
+    --sidebar-hover: #2b2b36;
+    --bg-topbar: #1e1e24;
+    --border-color: #333;
+    --bg-card: #1e1e24;
+    --text-muted: #9e9e9e;
+    --bg-input: #2b2b36;
+    --text-input: #e0e0e0;
+    --bg-prompt: #14141a;
+    --tag-bg: #2c3e50;
+    --tag-text: #64b5f6;
+    --highlight-bg: #d35400;
+    --highlight-text: #fff;
+    --modal-bg: rgba(0,0,0,0.7);
+    --modal-content: #1e1e24;
+  }
+
+  /* --- БАЗОВЫЕ СТИЛИ --- */
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background-color 0.3s; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #777; }
+
+  /* --- ЛЕВАЯ КОЛОНКА --- */
+  #sidebar { width: 300px; background: var(--bg-sidebar); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; transition: 0.3s margin-left; z-index: 10; }
+  #sidebar.collapsed { margin-left: -300px; }
+
+  .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.2); background: var(--sidebar-header); }
+  .brand-title { font-weight: 800; font-size: 22px; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .brand-subtitle { font-size: 12px; color: #95a5a6; margin-top: 6px; font-weight: normal; }
+
+  .category-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+  .category-item { padding: 12px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; border-left: 4px solid transparent; font-size: 15px; color: var(--sidebar-text); }
+  .category-item:hover { background: var(--sidebar-hover); }
+  .category-item.active { background: var(--sidebar-hover); border-left-color: #3498db; font-weight: bold; background-color: rgba(52, 152, 219, 0.1); }
+
+  .cat-actions { display: flex; gap: 10px; opacity: 0; transition: 0.2s; align-items: center; }
+  .category-item:hover .cat-actions { opacity: 1; }
+  .pin-cat { cursor: pointer; opacity: 0.7; transition: 0.2s; font-size: 13px; }
+  .pin-cat:hover { opacity: 1; transform: scale(1.1); }
+  .del-cat { color: #e74c3c; cursor: pointer; font-weight: bold; opacity: 0.7; transition: 0.2s; font-size: 16px; line-height: 1; }
+  .del-cat:hover { opacity: 1; transform: scale(1.1); }
+
+  .add-cat-box { padding: 20px; background: var(--sidebar-header); border-bottom: 1px solid rgba(0,0,0,0.2); }
+  .add-cat-box input { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 10px; border: 1px solid transparent; border-radius: 4px; background: var(--bg-sidebar); color: var(--sidebar-text); outline: none; transition: 0.2s; }
+  .add-cat-box input:focus { border-color: #3498db; }
+
+  .backup-panel { padding: 15px 20px; background: var(--sidebar-header); display: flex; flex-direction: column; gap: 8px; }
+  .backup-panel button { width: 100%; font-size: 13px; padding: 8px; text-align: left; display: flex; align-items: center; gap: 8px; justify-content: center; }
+
+  /* --- ПРАВАЯ КОЛОНКА --- */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100vh; position: relative; }
+
+  #topbar { padding: 15px 30px; background: var(--bg-topbar); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; transition: 0.3s; }
+  .top-left-controls { display: flex; align-items: center; gap: 15px; }
+  .menu-toggle { font-size: 24px; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 0; display: flex; align-items: center; transition: 0.2s; }
+  .menu-toggle:hover { color: #3498db; }
+
+  #currentCatTitle { margin: 0; color: var(--text-main); font-size: 20px; font-weight: bold; }
+  #saveToast { color: #27ae60; font-weight: bold; font-size: 14px; margin-left: 15px; opacity: 0; transition: 0.3s; }
+
+  .search-box { display: flex; justify-content: flex-end; align-items: center; }
+  .search-box input { width: 300px; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 14px; outline: none; background: var(--bg-input); color: var(--text-input); transition: 0.2s; }
+  .search-box input:focus { border-color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); }
+
+  #content { flex: 1; padding: 30px; overflow-y: auto; }
+
+  /* --- ИНФО-РАЗДЕЛ --- */
+  #info-state { display: none; background: var(--bg-card); padding: 40px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 850px; margin: 0 auto; line-height: 1.6; }
+  #info-state h2 { margin-top: 0; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+  #info-state h3 { color: #3498db; margin-top: 25px; margin-bottom: 15px; }
+  #info-state ul { padding-left: 20px; margin-top: 0; }
+  #info-state li { margin-bottom: 8px; }
+
+  .trust-box { background: rgba(52, 152, 219, 0.1); border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+  .trust-box h4 { margin: 0 0 10px 0; color: #3498db; }
+  .warning-box { background: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; color: var(--text-main); }
+
+  /* Формы и карточки */
+  .prompt-form { background: var(--bg-card); padding: 20px; border-radius: 8px; border-top: 4px solid #3498db; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); margin-bottom: 30px; }
+  .prompt-form input, .prompt-form textarea { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 14px; background: var(--bg-input); color: var(--text-input); }
+  .prompt-form textarea { height: 250px; resize: vertical; }
+  .prompt-form textarea#pNote { height: 60px; margin-bottom: 15px; border-left: 3px solid #3498db; }
+  .form-hint { font-size: 12px; color: #3498db; margin-bottom: 5px; font-weight: 500; }
+
+  .prompt-card { background: var(--bg-card); border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); transition: 0.2s; }
+  .prompt-card.pinned { border-left: 4px solid #f1c40f; }
+  .prompt-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
+
+  .clone-badge { font-size: 11px; background: #e0e0e0; color: #555; padding: 2px 8px; border-radius: 12px; margin-left: 8px; font-weight: normal; vertical-align: middle; }
+  [data-theme="dark"] .clone-badge { background: #333; color: #aaa; }
+
+  /* Аналитика, теги и примечания */
+  .prompt-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tag-pill { background: var(--tag-bg); color: var(--tag-text); font-size: 12px; padding: 4px 10px; border-radius: 12px; font-weight: 500; }
+  .char-count { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+  .prompt-note { background: rgba(52, 152, 219, 0.05); border-left: 3px solid #3498db; padding: 10px 15px; margin-bottom: 15px; font-size: 13px; color: var(--text-main); border-radius: 0 4px 4px 0; font-style: italic; }
+  [data-theme="dark"] .prompt-note { background: rgba(52, 152, 219, 0.1); }
+
+  .prompt-text { white-space: pre-wrap; background: var(--bg-prompt); padding: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; color: var(--text-main); border: 1px solid var(--border-color); max-height: 400px; overflow-y: auto; line-height: 1.5; }
+  .var-highlight { background-color: var(--highlight-bg); color: var(--highlight-text); padding: 0 4px; border-radius: 3px; font-weight: bold; display: inline-block; }
+
+  .prompt-actions { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; }
+
+  /* Кнопки */
+  button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .btn-blue { background: #3498db; } .btn-blue:hover { background: #2980b9; }
+  .btn-green { background: #2ecc71; } .btn-green:hover { background: #27ae60; }
+  .btn-gray { background: #95a5a6; } .btn-gray:hover { background: #7f8c8d; }
+  .btn-red { background: #e74c3c; } .btn-red:hover { background: #c0392b; }
+  .btn-dark { background: #1a252f; border: 1px solid #34495e; } .btn-dark:hover { background: #111820; }
+  .btn-info { background: transparent; color: #3498db; border: 1px solid #3498db; } .btn-info:hover { background: #3498db; color: white; }
+  .btn-yellow { background: #f1c40f; color: #333; } .btn-yellow:hover { background: #f39c12; }
+  .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-color); } .btn-outline:hover { background: var(--bg-prompt); }
+
+  #empty-state { text-align: center; color: var(--text-muted); margin-top: 10vh; }
+
+  /* --- МОДАЛЬНОЕ ОКНО ПЕРЕМЕННЫХ --- */
+  #varModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 1000; justify-content: center; align-items: center; }
+  .modal-box { background: var(--modal-content); padding: 30px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .modal-box h3 { margin-top: 0; color: var(--text-main); margin-bottom: 20px; }
+  .var-input-group { margin-bottom: 15px; }
+  .var-input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #3498db; font-size: 14px; }
+  .var-input-group input { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-input); color: var(--text-input); font-size: 14px; outline: none; }
+  .var-input-group input:focus { border-color: #3498db; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 25px; justify-content: flex-end; }
+</style>
 </head>
 <body>
-    <header>
-        <h1>Моё портфолио: визуальные кейсы</h1>
-    </header>
-    <main class="gallery">
-        <div class="card">
-            <a href="preview/example-image.jpg" target="_blank">
-                <img src="preview/example-image.jpg" alt="Обложка проекта">
-                <div class="card-title">Пример проекта #1</div>
-            </a>
+
+  <!-- ЛЕВАЯ ПАНЕЛЬ -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title"> 📚 Neuropanda.ai</div>
+      <div class="brand-subtitle">От практиков. Для практиков</div>
+    </div>
+
+    <div class="category-list" id="categoryList"></div>
+
+    <div class="add-cat-box">
+      <input type="text" id="newCatName" placeholder="Название раздела..." onkeypress="if(event.key === 'Enter') addCategory()">
+      <button class="btn-blue" style="width: 100%; justify-content: center;" onclick="addCategory()">+ Добавить раздел</button>
+    </div>
+
+    <div class="backup-panel">
+      <button class="btn-info" onclick="showInfoScreen()">🛡️ Работа & Безопасность</button>
+      <button class="btn-green" onclick="exportDB()">💾 Скачать бекап базы</button>
+      <button class="btn-dark" onclick="importDB()">📂 Загрузить из файла</button>
+      <button class="btn-dark" onclick="toggleTheme()" id="themeBtn" style="margin-top: 10px; font-size: 14px;">🌙 Темная тема</button>
+    </div>
+  </div>
+
+  <!-- ПРАВАЯ ПАНЕЛЬ -->
+  <div id="main">
+    <div id="topbar">
+      <div class="top-left-controls">
+        <button class="menu-toggle" onclick="toggleSidebar()" title="Свернуть/Развернуть меню">☰</button>
+        <h2 id="currentCatTitle">Загрузка...</h2>
+        <span id="saveToast">✓ Сохранено</span>
+      </div>
+
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="🔍 Поиск по словам и тегам..." oninput="handleSearch()">
         </div>
-        <div class="card">
-            <a href="webform/form.html" target="_blank">
-                <img src="https://dummyimage.com/1280x720/4a67ff/ffffff&text=Генератор+кейса" alt="Генератор кейса">
-                <div class="card-title">📝 Форма генерации кейса</div>
-            </a>
+        <button class="btn-blue" id="btnShowForm" onclick="toggleForm()" style="display: none;">+ Создать промпт</button>
+      </div>
+    </div>
+
+    <div id="content">
+      <div id="empty-state">
+        <div style="font-size: 50px; margin-bottom: 20px;">📖</div>
+        <h3>Ваша личная промпт-библиотека</h3>
+        <p>Грамотный промптинг начинается с порядка</p>
+      </div>
+
+      <!-- Экран Работа & Безопасность -->
+      <div id="info-state">
+        <h2>🛡️ Работа и Безопасность данных</h2>
+
+        <h3>Почему это безопасно?</h3>
+        <ul>
+          <li><b>100% Офлайн:</b> Инструмент не использует базы данных, серверы или API. Ни одна строчка ваших промптов не покидает этот компьютер.</li>
+          <li><b>Локальная память:</b> Все данные сохраняются на лету в защищенную память вашего браузера (LocalStorage).</li>
+          <li><b>Никаких трекеров:</b> В коде нет аналитики или скриптов слежения.</li>
+        </ul>
+
+        <div class="trust-box">
+          <h4>Аутентичность и ИИ-Аудит</h4>
+          <p style="margin: 0 0 10px 0;">Официальная и безопасная версия библиотеки доступна только на <b>Pandeon.pro</b>. Мы не несем ответственности за модификации, скачанные со сторонних ресурсов.</p>
+          <p style="margin: 0 0 10px 0;"><b>Проверка:</b> Скопируйте код и отправьте его в ChatGPT, Claude, Gemini, Kimi и т.п. с вопросом вроде: <i>«Есть ли в этом коде вредоносные скрипты, трекеры или скрытая отправка данных в интернет?»</i></p>
+          <p style="margin: 0; font-size: 14px;"><b>Альтернативные способы проверки:</b><br>
+          • <b>Песочницы:</b> Вставьте код в сервисы вроде CodePen.io или JSFiddle.net. Они покажут, как работает код, изолированно от вашего компьютера.<br>
+          • <b>Антивирусы:</b> Сохраненный HTML-файл можно прогнать через VirusTotal.com (он проверит его по базам 70+ антивирусов).</p>
         </div>
-    </main>
+
+        <h3>Что умеет библиотека и как работать?</h3>
+        <ul>
+          <li><b>Организация:</b> Один промпт — один раздел. <i>Совет: создайте отдельный раздел "Идеи / Черновики", чтобы использовать базу как записную книжку.</i></li>
+          <li><b>Умный поиск:</b> Поле поиска ищет совпадения <b>везде</b>: в заголовках, внутри самого текста инструкций и в тегах.</li>
+          <li><b>Умные переменные:</b> Оборачивайте слова в промпте в `[квадратные]`, `{фигурные}` или `(круглые)` скобки. На экране они подсветятся цветом. А когда вы нажмете «Скопировать», система предложит вам ввести значения для этих переменных и скопирует уже готовый, заполненный текст!</li>
+          <li><b>Примечания и Копии:</b> Добавляйте к промптам примечания (например, для какой ЦА они написаны). Оригинал автоматически считает и показывает на экране, сколько раз вы его скопировали.</li>
+          <li><b>Закрепление (Промпты и Разделы):</b> Жмите ⭐ на карточке промпта, чтобы закрепить его вверху. То же самое работает для левого меню: наведите мышку на раздел и нажмите ⭐, чтобы папка всегда была под рукой. И да, закрепы сохраняются в бекап!</li>
+          <li><b>Дублирование:</b> Жмите 📄, чтобы мгновенно создать копию промпта для редактирования.</li>
+          <li><b>Счетчик и Интерфейс:</b> Под каждым промптом выводится его точная длина в символах (для контроля токенов). Кнопка «☰» сверху скрывает левое меню для работы на узких экранах. Внизу слева — переключатель на Темную тему.</li>
+        </ul>
+
+        <h3>📱 Использование на смартфоне (iOS / Android) и Синхронизация</h3>
+        <p>Для телефона не нужны специальные приложения, инструмент работает в браузере. Делайте так:</p>
+        <ol>
+          <li>Создайте готовый файл <code>Neuropanda_prompts.html</code> на компьютере (например, сохраните его на Рабочий стол).</li>
+          <li>То, что вы сохранили на Рабочий стол — это и есть готовый файл в виде иконки вашего браузера. Перекиньте этот файл себе на телефон (через «Избранное» Telegram, Google Drive, iCloud или почту).</li>
+          <li>Сохраните файл в память телефона (в приложение «Файлы» или «Загрузки»).</li>
+          <li>Нажмите на файл — он полноценно откроется в вашем мобильном браузере.</li>
+        </ol>
+
+        <div class="warning-box">
+          <b>⚠️ ВАЖНО ПРО СИНХРОНИЗАЦИЮ И БЕКАПЫ:</b><br><br>
+          Ваш телефон и компьютер <b>НИКАК не связаны</b>. Это две независимые локальные версии. База сохраняется только в кэш того браузера, где открыт файл.<br><br>
+          Браузер (особенно мобильный) может случайно обнулить память этого файла. Чтобы не потерять данные, синхронизируйте их вручную: создали новые промпты — <b>сразу жмите «Скачать бекап базы»</b>. Файлик JSON — это ваша 100% страховка. Его можно перекидывать между ПК и смартфоном и загружать через кнопку «Загрузить из файла».
+        </div>
+      </div>
+
+      <!-- Форма создания -->
+      <div class="prompt-form" id="promptForm" style="display: none;">
+        <h3 id="formTitle" style="margin-top: 0; color: var(--text-main);">Добавить новый промпт</h3>
+        <input type="hidden" id="editIndex" value="-1">
+        <input type="hidden" id="editCat" value="">
+
+        <input type="text" id="pTitle" placeholder="Название промпта (например: AEO-оптимизация текста)">
+        <input type="text" id="pTags" placeholder="🏷️ Теги через запятую (например: seo, google, текст)">
+        <textarea id="pNote" placeholder="📝 Примечание (опционально, например: ЦА - пенсионеры)"></textarea>
+
+        <div class="form-hint">💡 Фишка: оборачивайте переменные в [квадратные], {фигурные} или (круглые) скобки. При копировании система поможет их заполнить.</div>
+        <textarea id="pText" placeholder="Вставьте инструкции для ИИ..."></textarea>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-green" onclick="savePrompt()">💾 Сохранить в базу</button>
+          <button class="btn-gray" onclick="toggleForm(false)">Отмена</button>
+        </div>
+      </div>
+
+      <!-- Список промптов -->
+      <div id="promptsContainer"></div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для переменных -->
+  <div id="varModal">
+    <div class="modal-box">
+      <h3>Заполните переменные:</h3>
+      <div id="varInputsContainer"></div>
+      <div class="modal-actions">
+        <button class="btn-gray" onclick="closeVarModal()">Отмена</button>
+        <button class="btn-outline" id="btnCopyRaw">Пропустить (Скопировать шаблон)</button>
+        <button class="btn-green" id="btnCopyFilled">📋 Скопировать с данными</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  "use strict"; // Включаем строгий режим для повышения безопасности
+
+  let db = {};
+  let currentCategory = null;
+  let currentViewList = [];
+  let isDarkTheme = false;
+  let isSidebarCollapsed = false;
+  const STORAGE_KEY = 'neuropanda_prompt_library';
+  const THEME_KEY = 'neuropanda_theme';
+
+  // --- Функция санитаризации (Защита от XSS) ---
+  function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function initApp() {
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme === 'dark') toggleTheme(true);
+
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        db = JSON.parse(savedData);
+        if (!db['_meta_']) db['_meta_'] = { pinnedCats: [] };
+      } catch(e) {
+        db = { '_meta_': { pinnedCats: [] } };
+      }
+    } else {
+      db = { '_meta_': { pinnedCats: [] } };
+    }
+    updateUIState();
+  }
+
+  // --- UI Функции ---
+  function toggleTheme(forceDark = false) {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    if (forceDark || !isDarkTheme) {
+      html.setAttribute('data-theme', 'dark');
+      btn.innerHTML = '☀️ Светлая тема';
+      isDarkTheme = true;
+      localStorage.setItem(THEME_KEY, 'dark');
+    } else {
+      html.setAttribute('data-theme', 'light');
+      btn.innerHTML = '🌙 Темная тема';
+      isDarkTheme = false;
+      localStorage.setItem(THEME_KEY, 'light');
+    }
+  }
+
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    isSidebarCollapsed = !isSidebarCollapsed;
+    if (isSidebarCollapsed) sidebar.classList.add('collapsed');
+    else sidebar.classList.remove('collapsed');
+  }
+
+  function saveDB() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    const toast = document.getElementById('saveToast');
+    if (toast) {
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 1500);
+    }
+  }
+
+  // --- ЭКСПОРТ / ИМПОРТ ---
+  function exportDB() {
+    const realCats = Object.keys(db).filter(k => k !== '_meta_');
+    if (realCats.length === 0) return alert('База пуста! Нечего скачивать.');
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "neuropanda_prompts_backup.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  function importDB() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.readAsText(file, 'UTF-8');
+      reader.onload = readerEvent => {
+        try {
+          const parsed = JSON.parse(readerEvent.target.result);
+
+          // ВАЛИДАЦИЯ ИМПОРТА (Защита от поврежденных данных)
+          if (typeof parsed !== 'object' || parsed === null) throw new Error('Неверный формат базы данных.');
+
+          for (let key in parsed) {
+            if (key === '_meta_') {
+              if (typeof parsed[key] !== 'object' || !Array.isArray(parsed[key].pinnedCats)) {
+                parsed[key] = { pinnedCats: [] }; // Восстанавливаем мету, если она сломана
+              }
+            } else {
+              if (!Array.isArray(parsed[key])) throw new Error(`Раздел "${escapeHTML(key)}" имеет неверный формат.`);
+            }
+          }
+          if (!parsed['_meta_']) parsed['_meta_'] = { pinnedCats: [] };
+
+          if (Object.keys(db).filter(k => k !== '_meta_').length > 0 && !confirm('Внимание! Текущая база будет удалена и заменена загруженными данными. Продолжить?')) return;
+
+          db = parsed;
+          saveDB();
+          currentCategory = null;
+          document.getElementById('searchInput').value = '';
+          updateUIState();
+          alert('База успешно загружена!');
+        } catch(err) {
+          alert('Ошибка чтения файла бекапа: ' + err.message);
+        }
+      };
+    };
+    input.click();
+  }
+
+  // --- ИНФО-ЭКРАН ---
+  function showInfoScreen() {
+    currentCategory = null;
+    document.getElementById('searchInput').value = '';
+    renderCategories();
+    document.getElementById('currentCatTitle').textContent = 'Работа & Безопасность';
+    document.getElementById('btnShowForm').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('promptsContainer').innerHTML = '';
+    toggleForm(false);
+    document.getElementById('info-state').style.display = 'block';
+  }
+
+  // --- КАТЕГОРИИ И UI ---
+  function renderCategories() {
+    const list = document.getElementById('categoryList');
+    list.innerHTML = '';
+
+    const meta = db['_meta_'] || { pinnedCats: [] };
+    const pinnedCats = meta.pinnedCats || [];
+    const allCats = Object.keys(db).filter(k => k !== '_meta_');
+
+    const pinned = allCats.filter(c => pinnedCats.includes(c));
+    const unpinned = allCats.filter(c => !pinnedCats.includes(c));
+
+    const renderItem = (cat, isPinned) => {
+      const safeCat = escapeHTML(cat); // Защита названия
+      const safeJsCat = encodeURIComponent(cat); // Защита для передачи в inline-функции
+
+      const div = document.createElement('div');
+      div.className = 'category-item' + (cat === currentCategory ? ' active' : '');
+      div.innerHTML = `
+        <span onclick="selectCategory(decodeURIComponent('${safeJsCat}'))" style="flex:1; display:flex; align-items:center; gap:6px;">
+          ${isPinned ? '⭐' : '📁'} ${safeCat} <small style="opacity: 0.6;">(${db[cat].length})</small>
+        </span>
+        <div class="cat-actions">
+          <span class="pin-cat" onclick="toggleCatPin(decodeURIComponent('${safeJsCat}'), event)" title="${isPinned ? 'Открепить раздел' : 'Закрепить сверху'}">${isPinned ? '📍' : '⭐'}</span>
+          <span class="del-cat" onclick="deleteCategory(decodeURIComponent('${safeJsCat}'), event)" title="Удалить раздел">×</span>
+        </div>
+      `;
+      list.appendChild(div);
+    };
+
+    pinned.forEach(c => renderItem(c, true));
+    unpinned.forEach(c => renderItem(c, false));
+  }
+
+  function toggleCatPin(name, event) {
+    if (event) event.stopPropagation();
+    const meta = db['_meta_'];
+    if (!meta.pinnedCats) meta.pinnedCats = [];
+
+    if (meta.pinnedCats.includes(name)) {
+      meta.pinnedCats = meta.pinnedCats.filter(c => c !== name);
+    } else {
+      meta.pinnedCats.push(name);
+    }
+
+    saveDB();
+    renderCategories();
+  }
+
+  function addCategory() {
+    const input = document.getElementById('newCatName');
+    const name = input.value.trim();
+    if (!name) return;
+    if (name === '_meta_') return alert('Это системное имя!');
+    if (db[name]) return alert('Такой раздел уже есть!');
+
+    db[name] = [];
+    input.value = '';
+    saveDB();
+    renderCategories();
+    selectCategory(name);
+  }
+
+  function deleteCategory(name, event) {
+    if (event) event.stopPropagation();
+    if (confirm(`Удалить раздел "${escapeHTML(name)}" и все промпты внутри? Это действие нельзя отменить.`)) {
+      delete db[name];
+      if (db['_meta_'] && db['_meta_'].pinnedCats) {
+        db['_meta_'].pinnedCats = db['_meta_'].pinnedCats.filter(c => c !== name);
+      }
+      if (currentCategory === name) {
+        currentCategory = null;
+        document.getElementById('searchInput').value = '';
+      }
+      saveDB();
+      updateUIState();
+    }
+  }
+
+  function selectCategory(name) {
+    currentCategory = name;
+    document.getElementById('searchInput').value = '';
+    updateUIState();
+  }
+
+  function updateUIState() {
+    renderCategories();
+    const searchInput = document.getElementById('searchInput').value.trim();
+    const btnShowForm = document.getElementById('btnShowForm');
+    const emptyState = document.getElementById('empty-state');
+    const infoState = document.getElementById('info-state');
+    const title = document.getElementById('currentCatTitle');
+
+    infoState.style.display = 'none';
+
+    if (searchInput) {
+      title.textContent = `🔍 Результаты поиска: "${searchInput}"`;
+      btnShowForm.style.display = 'none';
+      emptyState.style.display = 'none';
+      toggleForm(false);
+      renderPrompts(searchInput.toLowerCase());
+    } else if (currentCategory) {
+      title.textContent = currentCategory;
+      btnShowForm.style.display = 'block';
+      emptyState.style.display = 'none';
+      toggleForm(false);
+      renderPrompts();
+    } else {
+      title.textContent = 'Neuropanda.ai';
+      btnShowForm.style.display = 'none';
+
+      const hasCategories = Object.keys(db).filter(k => k !== '_meta_').length > 0;
+      if (!hasCategories) emptyState.style.display = 'block';
+      else infoState.style.display = 'block';
+
+      document.getElementById('promptsContainer').innerHTML = '';
+      toggleForm(false);
+    }
+  }
+
+  function handleSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (query) currentCategory = null;
+    updateUIState();
+  }
+
+  // --- ПРОМПТЫ И ПОДСВЕТКА ---
+  function highlightVariables(text) {
+    let safe = escapeHTML(text); // Защита тела промпта
+    return safe.replace(/(\[[^\]]+\]|\{[^\}]+\}|\([^\)]+\))/g, '<span class="var-highlight">$1</span>');
+  }
+
+  function extractVariables(text) {
+    const regex = /(\[[^\]]+\]|\{[^\}]+\}|\([^\)]+\))/g;
+    const matches = [...text.matchAll(regex)].map(m => m[0]);
+    return [...new Set(matches)];
+  }
+
+  function renderPrompts(searchQuery = '') {
+    const container = document.getElementById('promptsContainer');
+    container.innerHTML = '';
+    currentViewList = [];
+
+    if (searchQuery) {
+      for (let cat in db) {
+        if (cat === '_meta_') continue;
+        db[cat].forEach((p, index) => {
+          const tagsStr = p.tags ? p.tags.join(' ') : '';
+          const noteStr = p.note ? p.note : '';
+          const searchStr = (p.title + ' ' + p.content + ' ' + tagsStr + ' ' + noteStr).toLowerCase();
+          if (searchStr.includes(searchQuery)) {
+            currentViewList.push({ cat: cat, originalIndex: index, prompt: p });
+          }
+        });
+      }
+    } else if (currentCategory && db[currentCategory]) {
+      db[currentCategory].forEach((p, index) => {
+        currentViewList.push({ cat: currentCategory, originalIndex: index, prompt: p });
+      });
+    }
+
+    if (currentViewList.length === 0 && (searchQuery || currentCategory)) {
+      container.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 40px;">Здесь пока пусто.</p>';
+      return;
+    }
+
+    currentViewList.reverse();
+    currentViewList.sort((a, b) => {
+      const pinA = a.prompt.pinned ? 1 : 0;
+      const pinB = b.prompt.pinned ? 1 : 0;
+      return pinB - pinA;
+    });
+
+    currentViewList.forEach((item) => {
+      const viewIndex = currentViewList.indexOf(item);
+      const p = item.prompt;
+      const card = document.createElement('div');
+      card.className = 'prompt-card' + (p.pinned ? ' pinned' : '');
+
+      let tagsHtml = '';
+      if (p.tags && p.tags.length > 0) {
+        // Защита тегов
+        tagsHtml = p.tags.map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('');
+      }
+      const charCount = `<span class="char-count">📏 ${p.content.length} симв.</span>`;
+
+      const safeTitle = escapeHTML(p.title);
+      const safeCat = escapeHTML(item.cat);
+      const safeNote = p.note ? escapeHTML(p.note) : '';
+      const processedText = highlightVariables(p.content);
+
+      // ЗАЩИТА: Принудительное приведение cloneCount к числу
+      const safeCloneCount = Number(p.cloneCount) || 0;
+
+      card.innerHTML = `
+        <div class="prompt-title">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            ${p.pinned ? '⭐' : ''} ${safeTitle}
+            ${safeCloneCount ? `<span class="clone-badge" title="Этот промпт был скопирован ${safeCloneCount} раз(а)">Копий: ${safeCloneCount}</span>` : ''}
+          </span>
+          ${searchQuery ? `<span style="font-size: 12px; color: var(--text-muted);">📂 ${safeCat}</span>` : ''}
+        </div>
+
+        <div class="prompt-meta">
+          ${tagsHtml}
+          ${charCount}
+        </div>
+
+        ${safeNote ? `<div class="prompt-note">📝 <b>Примечание:</b> ${safeNote}</div>` : ''}
+
+        <div class="prompt-text">${processedText}</div>
+
+        <div class="prompt-actions">
+          <button class="btn-green" onclick="initiateCopy(${viewIndex}, this)">📋 Копировать</button>
+          <button class="btn-outline" onclick="togglePin(${viewIndex})" title="Закрепить сверху">${p.pinned ? '📍 Открепить' : '⭐ Закрепить'}</button>
+          <button class="btn-outline" onclick="clonePrompt(${viewIndex})" title="Создать копию">📄 Дублировать</button>
+          <button class="btn-gray" onclick="editPrompt(${viewIndex})">✏️ Изменить</button>
+          <button class="btn-red" onclick="deletePrompt(${viewIndex})">🗑 Удалить</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function toggleForm(show = true) {
+    const form = document.getElementById('promptForm');
+    if (!show) {
+      form.style.display = 'none';
+      document.getElementById('pTitle').value = '';
+      document.getElementById('pTags').value = '';
+      document.getElementById('pNote').value = '';
+      document.getElementById('pText').value = '';
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('editCat').value = '';
+    } else {
+      form.style.display = 'block';
+      document.getElementById('pTitle').focus();
+    }
+  }
+
+  function savePrompt() {
+    const title = document.getElementById('pTitle').value.trim() || 'Без названия';
+    const content = document.getElementById('pText').value.trim();
+    const note = document.getElementById('pNote').value.trim();
+    const rawTags = document.getElementById('pTags').value;
+    const tags = rawTags.split(',').map(t => t.trim()).filter(t => t !== '');
+    const editIndex = parseInt(document.getElementById('editIndex').value);
+    const targetCat = document.getElementById('editCat').value || currentCategory;
+
+    if (!content) return alert('Промпт не может быть пустым!');
+    if (!targetCat) return alert('Ошибка: Не выбран раздел.');
+
+    if (editIndex > -1) {
+      const existing = db[targetCat][editIndex];
+      const isPinned = existing.pinned || false;
+      const cloneCount = existing.cloneCount || 0;
+      db[targetCat][editIndex] = { title, content, tags, pinned: isPinned, note, cloneCount };
+    } else {
+      db[targetCat].push({ title, content, tags, pinned: false, note, cloneCount: 0 });
+    }
+
+    saveDB();
+    toggleForm(false);
+    updateUIState();
+  }
+
+  function editPrompt(viewIndex) {
+    const item = currentViewList[viewIndex];
+    const p = item.prompt;
+    document.getElementById('pTitle').value = p.title;
+    document.getElementById('pText').value = p.content;
+    document.getElementById('pTags').value = p.tags ? p.tags.join(', ') : '';
+    document.getElementById('pNote').value = p.note ? p.note : '';
+    document.getElementById('editIndex').value = item.originalIndex;
+    document.getElementById('editCat').value = item.cat;
+
+    toggleForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function deletePrompt(viewIndex) {
+    if (confirm('Удалить этот промпт из базы?')) {
+      const item = currentViewList[viewIndex];
+      db[item.cat].splice(item.originalIndex, 1);
+      saveDB();
+      updateUIState();
+    }
+  }
+
+  function clonePrompt(viewIndex) {
+    const item = currentViewList[viewIndex];
+    const p = item.prompt;
+
+    p.cloneCount = (p.cloneCount || 0) + 1;
+    db[item.cat][item.originalIndex] = p;
+
+    const clone = {
+      title: p.title + " (Копия " + p.cloneCount + ")",
+      content: p.content,
+      tags: p.tags ? [...p.tags] : [],
+      note: p.note || '',
+      pinned: false,
+      cloneCount: 0
+    };
+    db[item.cat].push(clone);
+    saveDB();
+    updateUIState();
+  }
+
+  function togglePin(viewIndex) {
+    const item = currentViewList[viewIndex];
+    db[item.cat][item.originalIndex].pinned = !db[item.cat][item.originalIndex].pinned;
+    saveDB();
+    updateUIState();
+  }
+
+  // --- ИНТЕРАКТИВНОЕ КОПИРОВАНИЕ ---
+  function initiateCopy(viewIndex, btnElement) {
+    const originalText = currentViewList[viewIndex].prompt.content;
+    const variables = extractVariables(originalText);
+
+    if (variables.length > 0) {
+      openVarModal(variables, originalText, btnElement);
+    } else {
+      executeCopy(originalText, btnElement);
+    }
+  }
+
+  function openVarModal(variables, originalText, btnElement) {
+    const container = document.getElementById('varInputsContainer');
+    let htmlString = ''; // ОПТИМИЗАЦИЯ: Собираем строку, а не дергаем DOM
+
+    variables.forEach((v, i) => {
+      const cleanName = escapeHTML(v.replace(/[\[\]\{\}\(\)]/g, '')); // Защита имен переменных
+      htmlString += `
+        <div class="var-input-group">
+          <label>${cleanName}</label>
+          <input type="text" id="varInput_${i}" data-original="${escapeHTML(v)}" placeholder="Введите значение...">
+        </div>
+      `;
+    });
+
+    container.innerHTML = htmlString; // Единоразовая вставка
+    document.getElementById('varModal').style.display = 'flex';
+
+    document.getElementById('btnCopyRaw').onclick = () => {
+      executeCopy(originalText, btnElement);
+      closeVarModal();
+    };
+
+    document.getElementById('btnCopyFilled').onclick = () => {
+      let filledText = originalText;
+      variables.forEach((v, i) => {
+        const inputVal = document.getElementById(`varInput_${i}`).value;
+        if (inputVal.trim() !== '') {
+          const escapedVar = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          filledText = filledText.replace(new RegExp(escapedVar, 'g'), inputVal);
+        }
+      });
+      executeCopy(filledText, btnElement);
+      closeVarModal();
+    };
+
+    setTimeout(() => document.getElementById('varInput_0').focus(), 100);
+  }
+
+  function closeVarModal() {
+    document.getElementById('varModal').style.display = 'none';
+  }
+
+  function executeCopy(text, btnElement) {
+    navigator.clipboard.writeText(text).then(() => {
+        const oldText = btnElement.innerHTML;
+        btnElement.innerHTML = '✅ Скопировано!';
+        btnElement.style.background = '#27ae60';
+        btnElement.style.color = 'white';
+        setTimeout(() => {
+          btnElement.innerHTML = oldText;
+          btnElement.style.background = '';
+          btnElement.style.color = '';
+        }, 1500);
+      }).catch(() => alert('Ошибка копирования браузером.'));
+  }
+
+  initApp();
+</script>
 </body>
 </html>
